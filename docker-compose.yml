@@ -1,0 +1,396 @@
+version: '3.8'
+
+services:
+  # ==================== HDFS Services ====================
+  namenode:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: namenode
+    hostname: namenode
+    networks:
+      - hadoop-network
+    ports:
+      - "9870:9870"  # Web UI
+      - "9000:9000"  # IPC
+      - "8020:8020"  # FileSystem
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+      - HDFS_CONF_dfs_replication=2
+      - HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check=false
+      - HDFS_CONF_dfs_permissions_enabled=false
+      - HDFS_CONF_dfs_webhdfs_enabled=true
+      - HDFS_CONF_dfs_client_use_datanode_hostname=true
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - CORE_CONF_hadoop_http_staticuser_user=root
+    volumes:
+      - namenode-data:/hadoop/dfs/name
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./scripts:/scripts
+    command: ["/scripts/start-hdfs.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9870"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  datanode1:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: datanode1
+    hostname: datanode1
+    networks:
+      - hadoop-network
+    ports:
+      - "9864:9864"  # Web UI
+      - "9866:9866"  # Data transfer
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - HDFS_CONF_dfs_datanode_data_dir=/hadoop/dfs/data
+      - HDFS_CONF_dfs_permissions_enabled=false
+      - HDFS_CONF_dfs_client_use_datanode_hostname=true
+    volumes:
+      - datanode1-data:/hadoop/dfs/data
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./scripts:/scripts
+    depends_on:
+      namenode:
+        condition: service_healthy
+    command: ["/scripts/init-datanode.sh"]
+
+  datanode2:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: datanode2
+    hostname: datanode2
+    networks:
+      - hadoop-network
+    ports:
+      - "9865:9864"  # Web UI
+      - "9867:9866"  # Data transfer
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - HDFS_CONF_dfs_datanode_data_dir=/hadoop/dfs/data
+      - HDFS_CONF_dfs_permissions_enabled=false
+      - HDFS_CONF_dfs_client_use_datanode_hostname=true
+    volumes:
+      - datanode2-data:/hadoop/dfs/data
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./scripts:/scripts
+    depends_on:
+      namenode:
+        condition: service_healthy
+    command: ["/scripts/init-datanode.sh"]
+
+  # ==================== YARN Services ====================
+  resourcemanager:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: resourcemanager
+    hostname: resourcemanager
+    networks:
+      - hadoop-network
+    ports:
+      - "8088:8088"  # Web UI
+      - "8030:8030"  # Scheduler
+      - "8031:8031"  # Resource Tracker
+      - "8032:8032"  # ApplicationMaster
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+      - YARN_CONF_yarn_resourcemanager_address=resourcemanager:8032
+      - YARN_CONF_yarn_resourcemanager_scheduler_address=resourcemanager:8030
+      - YARN_CONF_yarn_resourcemanager_resource___tracker_address=resourcemanager:8031
+    volumes:
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./scripts:/scripts
+    depends_on:
+      namenode:
+        condition: service_healthy
+    command: ["/scripts/start-yarn.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/cluster"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  nodemanager:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: nodemanager
+    hostname: nodemanager
+    networks:
+      - hadoop-network
+    ports:
+      - "8042:8042"  # Web UI
+      - "8040:8040"  # Localizer
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+      - YARN_CONF_yarn_nodemanager_aux___services=mapreduce_shuffle
+      - YARN_CONF_yarn_nodemanager_resource_memory___mb=2048
+      - YARN_CONF_yarn_nodemanager_resource_cpu___vcores=2
+      - YARN_CONF_yarn_nodemanager_vmem___check___enabled=false
+    volumes:
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./scripts:/scripts
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+    command: ["/scripts/start-nodemanager.sh"]
+
+  # ==================== Hive Services ====================
+  hive-metastore-db:
+    image: mysql:8.0
+    container_name: hive-metastore-db
+    hostname: hive-metastore-db
+    networks:
+      - hadoop-network
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: metastore
+      MYSQL_USER: hive
+      MYSQL_PASSWORD: hivepassword
+    volumes:
+      - hive-metastore-db-data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  hive-metastore:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: hive-metastore
+    hostname: hive-metastore
+    networks:
+      - hadoop-network
+    ports:
+      - "9083:9083"
+    environment:
+      - HIVE_METASTORE_DB_HOST=hive-metastore-db
+      - HIVE_METASTORE_DB_PORT=3306
+      - HIVE_METASTORE_DB_NAME=metastore
+      - HIVE_METASTORE_DB_USER=hive
+      - HIVE_METASTORE_DB_PASSWORD=hivepassword
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+    volumes:
+      - ./hive/conf:/opt/hive/conf
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+    depends_on:
+      namenode:
+        condition: service_healthy
+      hive-metastore-db:
+        condition: service_healthy
+    command: >
+      bash -c "
+        /opt/hive/bin/schematool -dbType mysql -initSchema || true &&
+        /opt/hive/bin/hive --service metastore
+      "
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9083"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  hiveserver2:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: hiveserver2
+    hostname: hiveserver2
+    networks:
+      - hadoop-network
+    ports:
+      - "10000:10000"  # Thrift server
+      - "10002:10002"  # Web UI
+    environment:
+      - HIVE_METASTORE_URI=thrift://hive-metastore:9083
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+    volumes:
+      - ./hive/conf:/opt/hive/conf
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+    depends_on:
+      hive-metastore:
+        condition: service_healthy
+    command: ["/opt/hive/bin/hiveserver2"]
+
+  # ==================== Kafka Services ====================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    hostname: zookeeper
+    networks:
+      - hadoop-network
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    hostname: kafka
+    networks:
+      - hadoop-network
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    hostname: kafka-ui
+    networks:
+      - hadoop-network
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # ==================== Airflow Services ====================
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    container_name: airflow
+    hostname: airflow
+    networks:
+      - hadoop-network
+    ports:
+      - "8081:8080"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__FERNET_KEY=UKMzEm3yIuFYEq1y3-2FxPNWSVwRASpahmQ9kQfEr8E=
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__SECRET_KEY=airflow_secret_key
+      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
+      - AIRFLOW_CONN_HDFS_DEFAULT=hdfs://namenode:9000
+      - AIRFLOW_CONN_HIVE_CLI_DEFAULT=hive_cli://hiveserver2:10000
+      - AIRFLOW_CONN_KAFKA_DEFAULT=kafka://kafka:9092
+      - _AIRFLOW_DB_UPGRADE=True
+      - _AIRFLOW_WWW_USER_CREATE=True
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+    volumes:
+      - ./src/dags_demo:/opt/airflow/dags
+      - ./airflow/airflow.cfg:/opt/airflow/airflow.cfg
+      - airflow-logs:/opt/airflow/logs
+      - airflow-plugins:/opt/airflow/plugins
+    depends_on:
+      postgres:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+      hive-metastore:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+        airflow db init &&
+        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+        airflow webserver & airflow scheduler
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: postgres
+    hostname: postgres
+    networks:
+      - hadoop-network
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  hadoop-network:
+    driver: bridge
+    name: hadoop-network
+
+volumes:
+  namenode-data:
+    name: namenode-data
+  datanode1-data:
+    name: datanode1-data
+  datanode2-data:
+    name: datanode2-data
+  hive-metastore-db-data:
+    name: hive-metastore-db-data
+  zookeeper-data:
+    name: zookeeper-data
+  zookeeper-logs:
+    name: zookeeper-logs
+  kafka-data:
+    name: kafka-data
+  airflow-logs:
+    name: airflow-logs
+  airflow-plugins:
+    name: airflow-plugins
+  postgres-data:
+    name: postgres-data
