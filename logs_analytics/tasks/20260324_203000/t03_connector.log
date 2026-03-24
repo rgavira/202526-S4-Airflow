@@ -1,0 +1,35 @@
+2026-03-24 20:36:51,137  INFO      ============================================================
+2026-03-24 20:36:51,138  INFO      TAREA 03 — REGISTRAR KAFKA CONNECT → HDFS (idempotente)
+2026-03-24 20:36:51,139  INFO        Endpoint : http://kafka-connect:8083
+2026-03-24 20:36:51,139  INFO        Conector : hdfs3-sink-home-sensors
+2026-03-24 20:36:51,140  INFO      ============================================================
+2026-03-24 20:36:51,196  INFO      Conector no existe → creando (POST)...
+2026-03-24 20:36:51,285  INFO      Conector creado. HTTP 201
+2026-03-24 20:36:51,286  INFO      Respuesta: {
+  "name": "hdfs3-sink-home-sensors",
+  "config": {
+    "connector.class": "io.confluent.connect.hdfs3.Hdfs3SinkConnector",
+    "tasks.max": "1",
+    "topics": "home_sensors",
+    "hdfs.url": "hdfs://namenode:9000",
+    "topics.dir": "/user/kafka",
+    "storage.class": "io.confluent.connect.hdfs3.storage.HdfsStorage",
+    "format.class": "io.confluent.connect.hdfs3.json.JsonFormat",
+    "flush.size": "50",
+    "rotate.interval.ms": "30000",
+    "rotate.schedule.interval.ms": "60000",
+    "schema.compatibility": "NONE",
+    "locale": "en_US",
+    "timezone": "UTC",
+    "hdfs.authentication.kerberos": "false",
+    "confluent.topic.bootstrap.servers": "kafka:29092",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "name": "hdfs3-sink-home-sensors"
+  },
+  "tasks": [],
+  "type": "sink"
+}
+2026-03-24 20:36:56,313  INFO      Estado del conector: RUNNING
+2026-03-24 20:36:56,314  INFO      Done. Returned value was: None
+2026-03-24 20:36:56,317  INFO      ::group::Post task execution logs
+2026-03-24 20:36:56,336  INFO      Marking task as SUCCESS. dag_id=sensor_pipeline_dag, task_id=03_register_hdfs_connector, run_id=scheduled__2026-03-24T20:30:00+00:00, execution_date=20260324T203000, start_date=20260324T203650, end_date=20260324T203656

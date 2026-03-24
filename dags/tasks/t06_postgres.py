@@ -22,6 +22,7 @@ import pandas as pd
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 from tasks.config import PG_TABLE, POSTGRES_CONN_ID
+from tasks.log_utils import setup_file_logging
 
 # ── DDL ───────────────────────────────────────────────────────────────────────
 CREATE_TABLE_SQL = f"""
@@ -83,6 +84,7 @@ _COL_ORDER = [
 
 
 def load_to_postgres(**context):
+    setup_file_logging("t06b_postgres", context["execution_date"])
     from psycopg2.extras import execute_values
 
     ti = context["task_instance"]

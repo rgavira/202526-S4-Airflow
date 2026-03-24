@@ -1,0 +1,233 @@
+======================================================================
+ REPORTE ANALÍTICO — HOME SENSOR PIPELINE
+ Generado: 2026-03-24 20:41:02
+======================================================================
+
+{
+  "metadata": {
+    "pipeline": "Entregable 3 — Home Sensor Pipeline",
+    "dag_run_id": "scheduled__2026-03-24T20:35:00+00:00",
+    "execution_date": "2026-03-24T20:35:00+00:00",
+    "generado_en": "2026-03-24T20:41:02.386165",
+    "tabla_fuente": "home_sensor_readings"
+  },
+  "analisis": {
+    "A_ineficiencia_termica": {
+      "titulo": "Detección de ineficiencia térmica",
+      "descripcion": "Momentos donde la temperatura exterior < 15 °C pero la temperatura interior media > 23 °C. Posible causa: calefacción encendida con ventanas abiertas.",
+      "umbrales": {
+        "exterior_max_c": 15,
+        "interior_min_c": 23
+      },
+      "severidad": "ALTA",
+      "eventos_detectados": 20,
+      "top_10_eventos": [
+        {
+          "timestamp": "2023-10-16T00:15:00",
+          "temp_exterior": "5.40",
+          "avg_temp_interior": "23.02",
+          "thermal_gap_c": "17.62",
+          "temp_salon": "22.34",
+          "temp_chambre": "23.36",
+          "temp_bureau": "23.38"
+        },
+        {
+          "timestamp": "2023-10-16T00:00:00",
+          "temp_exterior": "5.65",
+          "avg_temp_interior": "23.06",
+          "thermal_gap_c": "17.41",
+          "temp_salon": "22.43",
+          "temp_chambre": "23.31",
+          "temp_bureau": "23.44"
+        },
+        {
+          "timestamp": "2023-10-15T23:45:00",
+          "temp_exterior": "5.93",
+          "avg_temp_interior": "23.10",
+          "thermal_gap_c": "17.17",
+          "temp_salon": "22.51",
+          "temp_chambre": "23.29",
+          "temp_bureau": "23.51"
+        },
+        {
+          "timestamp": "2023-10-15T23:30:00",
+          "temp_exterior": "6.24",
+          "avg_temp_interior": "23.15",
+          "thermal_gap_c": "16.91",
+          "temp_salon": "22.57",
+          "temp_chambre": "23.29",
+          "temp_bureau": "23.58"
+        },
+        {
+          "timestamp": "2023-10-15T23:15:00",
+          "temp_exterior": "6.52",
+          "avg_temp_interior": "23.17",
+          "thermal_gap_c": "16.65",
+          "temp_salon": "22.60",
+          "temp_chambre": "23.27",
+          "temp_bureau": "23.65"
+        },
+        {
+          "timestamp": "2023-10-15T23:00:00",
+          "temp_exterior": "6.89",
+          "avg_temp_interior": "23.21",
+          "thermal_gap_c": "16.32",
+          "temp_salon": "22.66",
+          "temp_chambre": "23.26",
+          "temp_bureau": "23.72"
+        },
+        {
+          "timestamp": "2023-09-24T08:15:00",
+          "temp_exterior": "7.41",
+          "avg_temp_interior": "23.69",
+          "thermal_gap_c": "16.29",
+          "temp_salon": "22.81",
+          "temp_chambre": "25.47",
+          "temp_bureau": "22.79"
+        },
+        {
+          "timestamp": "2023-09-24T08:30:00",
+          "temp_exterior": "7.40",
+          "avg_temp_interior": "23.68",
+          "thermal_gap_c": "16.28",
+          "temp_salon": "22.78",
+          "temp_chambre": "25.52",
+          "temp_bureau": "22.74"
+        },
+        {
+          "timestamp": "2023-09-24T08:00:00",
+          "temp_exterior": "7.44",
+          "avg_temp_interior": "23.69",
+          "thermal_gap_c": "16.25",
+          "temp_salon": "22.83",
+          "temp_chambre": "25.43",
+          "temp_bureau": "22.83"
+        },
+        {
+          "timestamp": "2023-09-24T08:45:00",
+          "temp_exterior": "7.47",
+          "avg_temp_interior": "23.68",
+          "thermal_gap_c": "16.21",
+          "temp_salon": "22.76",
+          "temp_chambre": "25.57",
+          "temp_bureau": "22.71"
+        }
+      ],
+      "recomendacion": "Se detectaron 20 episodios. Revisa la programación del termostato y el estado de las ventanas."
+    },
+    "B_calidad_aire_critica": {
+      "titulo": "Calidad del aire crítica (CO₂ elevado)",
+      "descripcion": "Periodos donde alguna zona del hogar supera los 1500 ppm. Valores > 1500 ppm indican ventilación insuficiente.",
+      "umbral_ppm": 1500,
+      "severidad": "CRITICA",
+      "eventos_detectados": 20,
+      "zonas_afectadas": {
+        "SALON": 20
+      },
+      "top_10_eventos": [
+        {
+          "timestamp": "2023-10-17T20:00:00",
+          "air_salon_ppm": "2486",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "829",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-10-17T20:15:00",
+          "air_salon_ppm": "2444",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "815",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-08-18T16:45:00",
+          "air_salon_ppm": "2439",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "813",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-10-17T19:45:00",
+          "air_salon_ppm": "2416",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "805",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-08-18T18:45:00",
+          "air_salon_ppm": "2389",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "796",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-10-17T20:30:00",
+          "air_salon_ppm": "2384",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "795",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-08-18T19:00:00",
+          "air_salon_ppm": "2382",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "794",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-10-25T20:15:00",
+          "air_salon_ppm": "2378",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "793",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-08-18T16:30:00",
+          "air_salon_ppm": "2375",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "792",
+          "zona_afectada": "SALON"
+        },
+        {
+          "timestamp": "2023-10-17T19:30:00",
+          "air_salon_ppm": "2372",
+          "air_chambre_ppm": "0",
+          "air_bureau_ppm": "0",
+          "avg_air_ppm": "791",
+          "zona_afectada": "SALON"
+        }
+      ],
+      "recomendacion": "Se detectaron 20 periodos críticos. Zonas afectadas: {'SALON': 20}. Ventilación inmediata recomendada."
+    },
+    "C_resumen_estadistico": {
+      "titulo": "Resumen estadístico del periodo",
+      "descripcion": "Estadísticas generales de todas las lecturas en la base de datos.",
+      "estadisticas": {
+        "total_registros": 8100,
+        "primer_registro": "2023-08-18T00:00:00",
+        "ultimo_registro": "2023-11-10T08:45:00",
+        "media_temp_interior": "23.91",
+        "min_temp_interior": "17.21",
+        "max_temp_interior": "30.70",
+        "media_hum_interior": "51.43",
+        "media_temp_exterior": "16.70",
+        "min_temp_exterior": "2.60",
+        "max_temp_exterior": "33.25",
+        "media_aire_ppm": "657"
+      }
+    }
+  }
+}
+
+======================================================================
+ FIN DEL REPORTE
+======================================================================

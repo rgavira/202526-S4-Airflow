@@ -52,7 +52,8 @@ with DAG(
     dag_id="sensor_pipeline_dag",
     default_args=default_args,
     description="Pipeline: CSV → Kafka → HDFS → PostgreSQL → Analíticas",
-    schedule_interval=None,   # Ejecución manual (cambia a '@hourly', etc. si quieres)
+    schedule_interval="*/5 * * * *",   # Cada 5 minutos (batch mode)
+    max_active_runs=1,                 # No solapar ejecuciones
     catchup=False,
     tags=["entregable3", "kafka", "hdfs", "postgres"],
 ) as dag:

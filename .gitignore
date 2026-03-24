@@ -4,3 +4,6 @@ hadoop_namenode
 hive/conf/hiveserver2.pid
 airflow/airflow-webserver.pid
 airflow/dags/*
+
+__pycache__
+

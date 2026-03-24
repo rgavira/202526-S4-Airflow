@@ -1,0 +1,10 @@
+2026-03-24 20:37:05,267  INFO      ============================================================
+2026-03-24 20:37:05,268  INFO      TAREA 06b — CARGA MASIVA EN POSTGRESQL
+2026-03-24 20:37:05,269  INFO        Tabla  : home_sensor_readings
+2026-03-24 20:37:05,270  INFO        Origen : /tmp/sensor_transformed.csv
+2026-03-24 20:37:05,270  INFO      ============================================================
+2026-03-24 20:37:05,460  INFO      Using connection ID 'postgres_default' for task execution.
+2026-03-24 20:37:05,715  INFO      Carga completada: 5000 filas insertadas/actualizadas.
+2026-03-24 20:37:05,729  INFO      Done. Returned value was: None
+2026-03-24 20:37:05,730  INFO      ::group::Post task execution logs
+2026-03-24 20:37:05,740  INFO      Marking task as SUCCESS. dag_id=sensor_pipeline_dag, task_id=06b_load_to_postgres, run_id=scheduled__2026-03-24T20:30:00+00:00, execution_date=20260324T203000, start_date=20260324T203704, end_date=20260324T203705

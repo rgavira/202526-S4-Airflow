@@ -1,0 +1,132 @@
+2026-03-24 20:36:59,284  INFO      ============================================================
+2026-03-24 20:36:59,285  INFO      TAREA 05 — TRANSFORMACIÓN Y NORMALIZACIÓN (Pandas)
+2026-03-24 20:36:59,286  INFO        Ruta HDFS : /user/kafka/home_sensors
+2026-03-24 20:36:59,287  INFO      ============================================================
+2026-03-24 20:36:59,287  INFO      [FASE 1/4] Listando ficheros JSON en HDFS...
+2026-03-24 20:36:59,315  INFO        Ficheros encontrados : 100
+2026-03-24 20:36:59,316  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000000+0000000049.json
+2026-03-24 20:36:59,317  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000050+0000000099.json
+2026-03-24 20:36:59,317  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000100+0000000149.json
+2026-03-24 20:36:59,318  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000150+0000000199.json
+2026-03-24 20:36:59,318  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000200+0000000249.json
+2026-03-24 20:36:59,319  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000250+0000000299.json
+2026-03-24 20:36:59,319  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000300+0000000349.json
+2026-03-24 20:36:59,320  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000350+0000000399.json
+2026-03-24 20:36:59,320  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000400+0000000449.json
+2026-03-24 20:36:59,321  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000450+0000000499.json
+2026-03-24 20:36:59,321  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000500+0000000549.json
+2026-03-24 20:36:59,322  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000550+0000000599.json
+2026-03-24 20:36:59,322  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000600+0000000649.json
+2026-03-24 20:36:59,323  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000650+0000000699.json
+2026-03-24 20:36:59,323  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000700+0000000749.json
+2026-03-24 20:36:59,324  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000750+0000000799.json
+2026-03-24 20:36:59,324  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000800+0000000849.json
+2026-03-24 20:36:59,325  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000850+0000000899.json
+2026-03-24 20:36:59,325  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000900+0000000949.json
+2026-03-24 20:36:59,326  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000000950+0000000999.json
+2026-03-24 20:36:59,326  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001000+0000001049.json
+2026-03-24 20:36:59,326  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001050+0000001099.json
+2026-03-24 20:36:59,327  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001100+0000001149.json
+2026-03-24 20:36:59,327  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001150+0000001199.json
+2026-03-24 20:36:59,328  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001200+0000001249.json
+2026-03-24 20:36:59,328  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001250+0000001299.json
+2026-03-24 20:36:59,329  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001300+0000001349.json
+2026-03-24 20:36:59,329  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001350+0000001399.json
+2026-03-24 20:36:59,330  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001400+0000001449.json
+2026-03-24 20:36:59,331  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001450+0000001499.json
+2026-03-24 20:36:59,331  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001500+0000001549.json
+2026-03-24 20:36:59,332  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001550+0000001599.json
+2026-03-24 20:36:59,332  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001600+0000001649.json
+2026-03-24 20:36:59,333  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001650+0000001699.json
+2026-03-24 20:36:59,333  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001700+0000001749.json
+2026-03-24 20:36:59,333  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001750+0000001799.json
+2026-03-24 20:36:59,334  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001800+0000001849.json
+2026-03-24 20:36:59,334  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001850+0000001899.json
+2026-03-24 20:36:59,335  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001900+0000001949.json
+2026-03-24 20:36:59,335  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000001950+0000001999.json
+2026-03-24 20:36:59,336  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002000+0000002049.json
+2026-03-24 20:36:59,336  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002050+0000002099.json
+2026-03-24 20:36:59,337  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002100+0000002149.json
+2026-03-24 20:36:59,337  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002150+0000002199.json
+2026-03-24 20:36:59,338  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002200+0000002249.json
+2026-03-24 20:36:59,338  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002250+0000002299.json
+2026-03-24 20:36:59,339  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002300+0000002349.json
+2026-03-24 20:36:59,339  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002350+0000002399.json
+2026-03-24 20:36:59,340  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002400+0000002449.json
+2026-03-24 20:36:59,340  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002450+0000002499.json
+2026-03-24 20:36:59,341  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002500+0000002549.json
+2026-03-24 20:36:59,341  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002550+0000002599.json
+2026-03-24 20:36:59,342  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002600+0000002649.json
+2026-03-24 20:36:59,342  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002650+0000002699.json
+2026-03-24 20:36:59,343  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002700+0000002749.json
+2026-03-24 20:36:59,343  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002750+0000002799.json
+2026-03-24 20:36:59,344  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002800+0000002849.json
+2026-03-24 20:36:59,344  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002850+0000002899.json
+2026-03-24 20:36:59,345  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002900+0000002949.json
+2026-03-24 20:36:59,345  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000002950+0000002999.json
+2026-03-24 20:36:59,346  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003000+0000003049.json
+2026-03-24 20:36:59,346  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003050+0000003099.json
+2026-03-24 20:36:59,347  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003100+0000003149.json
+2026-03-24 20:36:59,347  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003150+0000003199.json
+2026-03-24 20:36:59,348  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003200+0000003249.json
+2026-03-24 20:36:59,348  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003250+0000003299.json
+2026-03-24 20:36:59,349  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003300+0000003349.json
+2026-03-24 20:36:59,349  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003350+0000003399.json
+2026-03-24 20:36:59,350  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003400+0000003449.json
+2026-03-24 20:36:59,350  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003450+0000003499.json
+2026-03-24 20:36:59,350  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003500+0000003549.json
+2026-03-24 20:36:59,351  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003550+0000003599.json
+2026-03-24 20:36:59,352  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003600+0000003649.json
+2026-03-24 20:36:59,352  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003650+0000003699.json
+2026-03-24 20:36:59,353  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003700+0000003749.json
+2026-03-24 20:36:59,353  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003750+0000003799.json
+2026-03-24 20:36:59,353  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003800+0000003849.json
+2026-03-24 20:36:59,354  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003850+0000003899.json
+2026-03-24 20:36:59,354  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003900+0000003949.json
+2026-03-24 20:36:59,355  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000003950+0000003999.json
+2026-03-24 20:36:59,355  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004000+0000004049.json
+2026-03-24 20:36:59,352  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004050+0000004099.json
+2026-03-24 20:36:59,353  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004100+0000004149.json
+2026-03-24 20:36:59,353  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004150+0000004199.json
+2026-03-24 20:36:59,353  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004200+0000004249.json
+2026-03-24 20:36:59,354  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004250+0000004299.json
+2026-03-24 20:36:59,354  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004300+0000004349.json
+2026-03-24 20:36:59,355  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004350+0000004399.json
+2026-03-24 20:36:59,356  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004400+0000004449.json
+2026-03-24 20:36:59,356  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004450+0000004499.json
+2026-03-24 20:36:59,356  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004500+0000004549.json
+2026-03-24 20:36:59,357  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004550+0000004599.json
+2026-03-24 20:36:59,357  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004600+0000004649.json
+2026-03-24 20:36:59,358  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004650+0000004699.json
+2026-03-24 20:36:59,358  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004700+0000004749.json
+2026-03-24 20:36:59,359  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004750+0000004799.json
+2026-03-24 20:36:59,359  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004800+0000004849.json
+2026-03-24 20:36:59,360  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004850+0000004899.json
+2026-03-24 20:36:59,360  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004900+0000004949.json
+2026-03-24 20:36:59,361  INFO          · /user/kafka/home_sensors/partition=0/home_sensors+0+0000004950+0000004999.json
+2026-03-24 20:36:59,361  INFO      [FASE 1/4] Leyendo registros...
+2026-03-24 20:37:02,444  INFO        Registros leídos de HDFS   : 5000
+2026-03-24 20:37:02,453  INFO      [FASE 2/4] Limpieza y validación de tipos...
+2026-03-24 20:37:02,464  INFO        Eliminados por timestamp nulo : 0  (5000 → 5000)
+2026-03-24 20:37:02,479  INFO      Using connection ID 'postgres_default' for task execution.
+2026-03-24 20:37:02,485  INFO      Running statement: SELECT MAX(timestamp) FROM home_sensor_readings, parameters: None
+2026-03-24 20:37:02,486  INFO        Watermark PG                  : sin datos previos → procesando todo
+2026-03-24 20:37:02,493  INFO        Outliers clipados           : 0 (ningún valor fuera de rango)
+2026-03-24 20:37:02,495  INFO        Nulos imputados             : 0 (ningún nulo numérico)
+2026-03-24 20:37:02,496  INFO      [FASE 3/4] Calculando métricas interiores y deduplicando...
+2026-03-24 20:37:02,503  INFO        Duplicados por timestamp    : 0  (5000 → 5000)
+2026-03-24 20:37:02,504  INFO      [FASE 4/4] Guardando CSV y generando resumen...
+2026-03-24 20:37:02,557  INFO      ============================================================
+2026-03-24 20:37:02,558  INFO        FUNNEL DE DATOS — T05
+2026-03-24 20:37:02,559  INFO        Leídos de HDFS              : 5000
+2026-03-24 20:37:02,559  INFO        - Timestamp nulo            : -0
+2026-03-24 20:37:02,560  INFO        - Ya en PG (watermark)      : -0
+2026-03-24 20:37:02,561  INFO        - Duplicados (timestamp)    : -0
+2026-03-24 20:37:02,561  INFO        = REGISTROS NUEVOS          : 5000
+2026-03-24 20:37:02,561  INFO        Nulos imputados (numérico)  : 0
+2026-03-24 20:37:02,562  INFO        Outliers clipados           : 0
+2026-03-24 20:37:02,562  INFO        CSV guardado en             : /tmp/sensor_transformed.csv
+2026-03-24 20:37:02,563  INFO      ============================================================
+2026-03-24 20:37:02,635  INFO      Done. Returned value was: 5000
+2026-03-24 20:37:02,636  INFO      ::group::Post task execution logs
+2026-03-24 20:37:02,659  INFO      Marking task as SUCCESS. dag_id=sensor_pipeline_dag, task_id=05_transform_normalize, run_id=scheduled__2026-03-24T20:30:00+00:00, execution_date=20260324T203000, start_date=20260324T203659, end_date=20260324T203702

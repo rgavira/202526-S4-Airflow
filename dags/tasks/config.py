@@ -28,5 +28,5 @@ POSTGRES_CONN_ID  = "postgres_default"
 PG_TABLE          = "home_sensor_readings"
 
 # ── Valores por defecto para Variables de Airflow ─────────────────────────────
-DEFAULT_BATCH_SIZE    = 50
+DEFAULT_BATCH_SIZE    = 1000
 DEFAULT_DELAY_SECONDS = 0.1

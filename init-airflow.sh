@@ -68,10 +68,12 @@ airflow connections add kafka_connect_default \
     || echo "   → Conexión 'kafka_connect_default' ya existe."
 
 echo "[5/5] Configurando Variables de Airflow..."
-# BATCH_SIZE   → número de filas a procesar por ejecución del DAG
-# DELAY_SECONDS → pausa (seg) entre el envío de cada mensaje a Kafka
-airflow variables set BATCH_SIZE 50     || true
-airflow variables set DELAY_SECONDS 0.1 || true
+# BATCH_SIZE    → filas por ejecución del DAG
+# DELAY_SECONDS → pausa (seg) entre mensajes Kafka (simula streaming)
+# BATCH_OFFSET  → cursor: fila desde la que empieza el siguiente lote (se actualiza automáticamente)
+airflow variables set BATCH_SIZE    5000 || true
+airflow variables set DELAY_SECONDS 0.01 || true
+airflow variables set BATCH_OFFSET  0    || true
 
 echo ""
 echo "======================================================="

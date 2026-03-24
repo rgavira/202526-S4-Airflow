@@ -1,0 +1,12 @@
+2026-03-24 20:40:00,964  INFO      ============================================================
+2026-03-24 20:40:00,966  INFO      TAREA 01 — INGESTA DEL CSV
+2026-03-24 20:40:00,967  INFO        Archivo : /opt/***/data/home_temperature_and_humidity_smoothed_filled.csv
+2026-03-24 20:40:00,969  INFO        Offset  : 5000  |  Lote: 5000 filas
+2026-03-24 20:40:00,970  INFO      ============================================================
+2026-03-24 20:40:01,019  INFO      Dataset completo: 8137 registros
+2026-03-24 20:40:01,033  INFO      Lote extraído   : 3137 filas  (filas 5000–8136)
+2026-03-24 20:40:01,035  INFO      Rango temporal  : 2023-10-09 02:00:00  →  2023-11-10 18:00:00
+2026-03-24 20:40:01,035  INFO      Próximo offset  : 0  (de 8137 filas totales)
+2026-03-24 20:40:01,123  INFO      Done. Returned value was: 3137
+2026-03-24 20:40:01,124  INFO      ::group::Post task execution logs
+2026-03-24 20:40:01,144  INFO      Marking task as SUCCESS. dag_id=sensor_pipeline_dag, task_id=01_ingest_csv_batch, run_id=scheduled__2026-03-24T20:35:00+00:00, execution_date=20260324T203500, start_date=20260324T204000, end_date=20260324T204001

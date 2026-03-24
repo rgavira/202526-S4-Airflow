@@ -28,6 +28,7 @@ from tasks.config import (
     KAFKA_CONNECT_URL,
     KAFKA_TOPIC,
 )
+from tasks.log_utils import setup_file_logging
 
 _CONNECTOR_CONFIG = {
     "connector.class": "io.confluent.connect.hdfs3.Hdfs3SinkConnector",
@@ -44,10 +45,15 @@ _CONNECTOR_CONFIG = {
     "locale": "en_US",
     "timezone": "UTC",
     "hdfs.authentication.kerberos": "false",
+    # Requerido por el conector Confluent HDFS3 para sus topics internos
+    "confluent.topic.bootstrap.servers": "kafka:29092",
+    # La clave del mensaje es un timestamp en texto plano, no JSON
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
 }
 
 
 def register_hdfs_connector(**context):
+    setup_file_logging("t03_connector", context["execution_date"])
     headers    = {"Content-Type": "application/json"}
     check_url  = f"{KAFKA_CONNECT_URL}/connectors/{CONNECTOR_NAME}"
     config_url = f"{KAFKA_CONNECT_URL}/connectors/{CONNECTOR_NAME}/config"
@@ -64,10 +70,24 @@ def register_hdfs_connector(**context):
     if resp.status_code == 200:
         logging.info("Conector existente → actualizando configuración (PUT)...")
         r = requests.put(config_url, json=_CONNECTOR_CONFIG, headers=headers, timeout=30)
-        r.raise_for_status()
+        if not r.ok:
+            logging.error(f"Kafka Connect rechazó la actualización: HTTP {r.status_code}\n{r.text}")
+            r.raise_for_status()
         logging.info(f"Conector actualizado. HTTP {r.status_code}")
 
     elif resp.status_code == 404:
+        # Verificar que el plugin HDFS3 está cargado antes de intentar crear el conector
+        plugins = requests.get(f"{KAFKA_CONNECT_URL}/connector-plugins", timeout=30)
+        hdfs3_ready = any(
+            "Hdfs3SinkConnector" in p.get("class", "")
+            for p in (plugins.json() if plugins.ok else [])
+        )
+        if not hdfs3_ready:
+            raise RuntimeError(
+                "El plugin HDFS3SinkConnector no está disponible en Kafka Connect. "
+                "Espera a que kafka-connect termine de instalar el plugin y reintenta."
+            )
+
         logging.info("Conector no existe → creando (POST)...")
         r = requests.post(
             create_url,
@@ -75,7 +95,9 @@ def register_hdfs_connector(**context):
             headers=headers,
             timeout=30,
         )
-        r.raise_for_status()
+        if not r.ok:
+            logging.error(f"Kafka Connect rechazó la creación: HTTP {r.status_code}\n{r.text}")
+            r.raise_for_status()
         logging.info(f"Conector creado. HTTP {r.status_code}")
         logging.info(f"Respuesta: {json.dumps(r.json(), indent=2)}")
 

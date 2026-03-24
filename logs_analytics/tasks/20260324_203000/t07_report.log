@@ -1,0 +1,87 @@
+2026-03-24 20:37:07,276  INFO      ============================================================
+2026-03-24 20:37:07,277  INFO      TAREA 07/08 — ANALÍTICAS Y REPORTE
+2026-03-24 20:37:07,278  INFO        DAG run : scheduled__2026-03-24T20:30:00+00:00
+2026-03-24 20:37:07,279  INFO      ============================================================
+2026-03-24 20:37:07,294  INFO      Using connection ID 'postgres_default' for task execution.
+2026-03-24 20:37:07,301  INFO      Running statement: 
+        SELECT
+            timestamp,
+            ROUND(temperature_exterieur::NUMERIC, 2)              AS temp_exterior,
+            ROUND(avg_indoor_temperature::NUMERIC, 2)             AS avg_temp_interior,
+            ROUND((avg_indoor_temperature
+                   - temperature_exterieur)::NUMERIC, 2)          AS thermal_gap_c,
+            ROUND(temperature_salon::NUMERIC, 2)                  AS temp_salon,
+            ROUND(temperature_chambre::NUMERIC, 2)                AS temp_chambre,
+            ROUND(temperature_bureau::NUMERIC, 2)                 AS temp_bureau
+        FROM home_sensor_readings
+        WHERE temperature_exterieur < 15
+          AND avg_indoor_temperature > 23
+        ORDER BY thermal_gap_c DESC
+        LIMIT 20;
+    , parameters: None
+2026-03-24 20:37:07,307  INFO      Rows affected: 20
+2026-03-24 20:37:07,317  INFO      Using connection ID 'postgres_default' for task execution.
+2026-03-24 20:37:07,323  INFO      Running statement: 
+        SELECT
+            timestamp,
+            ROUND(air_salon::NUMERIC, 0)              AS air_salon_ppm,
+            ROUND(air_chambre::NUMERIC, 0)            AS air_chambre_ppm,
+            ROUND(air_bureau::NUMERIC, 0)             AS air_bureau_ppm,
+            ROUND(avg_indoor_air_quality::NUMERIC, 0) AS avg_air_ppm,
+            CASE
+                WHEN air_salon   > 1500
+                 AND air_chambre > 1500
+                 AND air_bureau  > 1500 THEN 'TODA LA CASA'
+                WHEN air_salon   > 1500
+                 AND air_chambre > 1500 THEN 'SALON + HABITACION'
+                WHEN air_salon   > 1500
+                 AND air_bureau  > 1500 THEN 'SALON + DESPACHO'
+                WHEN air_chambre > 1500
+                 AND air_bureau  > 1500 THEN 'HABITACION + DESPACHO'
+                WHEN air_salon   > 1500 THEN 'SALON'
+                WHEN air_chambre > 1500 THEN 'HABITACION'
+                WHEN air_bureau  > 1500 THEN 'DESPACHO'
+                ELSE 'MULTIPLE'
+            END AS zona_afectada
+        FROM home_sensor_readings
+        WHERE air_salon > 1500 OR air_chambre > 1500 OR air_bureau > 1500
+        ORDER BY avg_air_ppm DESC
+        LIMIT 20;
+    , parameters: None
+2026-03-24 20:37:07,334  INFO      Rows affected: 20
+2026-03-24 20:37:07,344  INFO      Using connection ID 'postgres_default' for task execution.
+2026-03-24 20:37:07,350  INFO      Running statement: 
+        SELECT
+            COUNT(*)                                         AS total_registros,
+            MIN(timestamp)                                   AS primer_registro,
+            MAX(timestamp)                                   AS ultimo_registro,
+            ROUND(AVG(avg_indoor_temperature)::NUMERIC, 2)  AS media_temp_interior,
+            ROUND(MIN(avg_indoor_temperature)::NUMERIC, 2)  AS min_temp_interior,
+            ROUND(MAX(avg_indoor_temperature)::NUMERIC, 2)  AS max_temp_interior,
+            ROUND(AVG(avg_indoor_humidity)::NUMERIC, 2)     AS media_hum_interior,
+            ROUND(AVG(temperature_exterieur)::NUMERIC, 2)   AS media_temp_exterior,
+            ROUND(MIN(temperature_exterieur)::NUMERIC, 2)   AS min_temp_exterior,
+            ROUND(MAX(temperature_exterieur)::NUMERIC, 2)   AS max_temp_exterior,
+            ROUND(AVG(avg_indoor_air_quality)::NUMERIC, 0)  AS media_aire_ppm
+        FROM home_sensor_readings;
+    , parameters: None
+2026-03-24 20:37:07,353  INFO      Rows affected: 1
+2026-03-24 20:37:07,439  INFO      ============================================================
+2026-03-24 20:37:07,440  INFO        FUNNEL COMPLETO DEL PIPELINE
+2026-03-24 20:37:07,441  INFO        [T01] Lote extraído del CSV         : 5000 filas  (offset=0)
+2026-03-24 20:37:07,442  INFO        [T02] Mensajes enviados a Kafka      : 5000
+2026-03-24 20:37:07,442  INFO        [T05] Leídos de HDFS (acumulado)    : 5000
+2026-03-24 20:37:07,443  INFO        [T05]   - Timestamp nulo            : -0
+2026-03-24 20:37:07,443  INFO        [T05]   - Ya en PG (watermark)      : -0
+2026-03-24 20:37:07,444  INFO        [T05]   - Duplicados (timestamp)    : -0
+2026-03-24 20:37:07,444  INFO        [T05]   = Registros nuevos           : 5000
+2026-03-24 20:37:07,445  INFO        [T06b] Cargados en PostgreSQL        : 5000  (upsert)
+2026-03-24 20:37:07,445  INFO        [T07]  Total acumulado en BD         : 5000
+2026-03-24 20:37:07,446  INFO      ============================================================
+2026-03-24 20:37:07,446  INFO        Reporte guardado en : /opt/***/logs_analytics/reporte_20260324_203000.log
+2026-03-24 20:37:07,447  INFO        Ineficiencia térmica : 20 eventos (ALTA)
+2026-03-24 20:37:07,448  INFO        Calidad aire crítica : 20 eventos (CRITICA)
+2026-03-24 20:37:07,448  INFO      ============================================================
+2026-03-24 20:37:07,449  INFO      Done. Returned value was: /opt/***/logs_analytics/reporte_20260324_203000.log
+2026-03-24 20:37:07,449  INFO      ::group::Post task execution logs
+2026-03-24 20:37:07,474  INFO      Marking task as SUCCESS. dag_id=sensor_pipeline_dag, task_id=07_08_analytics_and_report, run_id=scheduled__2026-03-24T20:30:00+00:00, execution_date=20260324T203000, start_date=20260324T203707, end_date=20260324T203707

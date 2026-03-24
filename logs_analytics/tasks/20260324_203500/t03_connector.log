@@ -1,0 +1,11 @@
+2026-03-24 20:40:46,398  INFO      ============================================================
+2026-03-24 20:40:46,399  INFO      TAREA 03 — REGISTRAR KAFKA CONNECT → HDFS (idempotente)
+2026-03-24 20:40:46,400  INFO        Endpoint : http://kafka-connect:8083
+2026-03-24 20:40:46,400  INFO        Conector : hdfs3-sink-home-sensors
+2026-03-24 20:40:46,402  INFO      ============================================================
+2026-03-24 20:40:46,411  INFO      Conector existente → actualizando configuración (PUT)...
+2026-03-24 20:40:46,426  INFO      Conector actualizado. HTTP 200
+2026-03-24 20:40:51,445  INFO      Estado del conector: RUNNING
+2026-03-24 20:40:51,448  INFO      Done. Returned value was: None
+2026-03-24 20:40:51,451  INFO      ::group::Post task execution logs
+2026-03-24 20:40:51,476  INFO      Marking task as SUCCESS. dag_id=sensor_pipeline_dag, task_id=03_register_hdfs_connector, run_id=scheduled__2026-03-24T20:35:00+00:00, execution_date=20260324T203500, start_date=20260324T204046, end_date=20260324T204051

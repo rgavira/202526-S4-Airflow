@@ -19,9 +19,11 @@ import time
 from airflow.models import Variable
 
 from tasks.config import DEFAULT_DELAY_SECONDS, KAFKA_BOOTSTRAP, KAFKA_TOPIC
+from tasks.log_utils import setup_file_logging
 
 
 def publish_to_kafka(**context):
+    setup_file_logging("t02_kafka", context["execution_date"])
     from kafka import KafkaProducer
     from kafka.errors import KafkaError
 
