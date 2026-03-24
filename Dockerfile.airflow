@@ -1,20 +1,28 @@
-# Partimos de la imagen base de Airflow
+# =============================================================================
+# Dockerfile.airflow — Imagen personalizada de Airflow para el Entregable 3
+#
+# Base:  apache/airflow:2.9.3-python3.9
+# Añade: providers de Postgres, Kafka y HTTP + pandas + kafka-python + requests
+# =============================================================================
+
 FROM apache/airflow:2.9.3-python3.9
 
-# Usamos el usuario airflow para instalar providers
 USER airflow
 
-# Instalamos los providers necesarios para PostgreSQL y Kafka
-# Pin apache-airflow to 2.9.3 to prevent upgrade to 3.x
+# Instalamos providers y librerías necesarias para el pipeline.
+# Fijamos la versión de airflow para evitar actualizaciones accidentales a 3.x.
 RUN pip install --no-cache-dir \
     "apache-airflow==2.9.3" \
-    apache-airflow-providers-postgres \
-    apache-airflow-providers-apache-kafka \
-    kafka-python \
-    psycopg2-binary
+    "apache-airflow-providers-postgres>=5.6.0" \
+    "apache-airflow-providers-apache-kafka>=1.3.1" \
+    "apache-airflow-providers-http>=4.6.0" \
+    "kafka-python>=2.0.2" \
+    "psycopg2-binary>=2.9.6" \
+    "pandas>=2.0.0" \
+    "requests>=2.31.0"
 
-# Copiar el script de inicialización
 USER root
 COPY init-airflow.sh /init-airflow.sh
 RUN chmod +x /init-airflow.sh
+
 USER airflow

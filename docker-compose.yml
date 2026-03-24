@@ -1,20 +1,41 @@
+# =============================================================================
+# docker-compose.yml — Entregable 3
+# Pipeline: CSV → Kafka → HDFS (Kafka Connect) → PostgreSQL → Analíticas
+#
+# Servicios:
+#   1. postgres        — Backend Airflow + base de datos analítica
+#   2. kafka           — Broker KRaft (sin Zookeeper)
+#   3. namenode        — HDFS Namenode (bde2020/hadoop 3.2.1)
+#   4a. datanode1      — HDFS Datanode 1
+#   4b. datanode2      — HDFS Datanode 2  (replicación factor 2)
+#   5. kafka-connect   — Kafka Connect + plugin HDFS3 Sink (Confluent Hub)
+#   6. airflow         — Orquestador (Airflow 2.9.3, LocalExecutor)
+# =============================================================================
+
 networks:
-  airflow_network:
+  pipeline_network:
     driver: bridge
 
 volumes:
-  airflow-logs:
   postgres-db:
+  airflow-logs:
+  hadoop_namenode:
+  hadoop_datanode1:
+  hadoop_datanode2:
 
 services:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 1. PostgreSQL 15  —  Backend de Airflow y almacén analítico
+  # ──────────────────────────────────────────────────────────────────────────
   postgres:
     image: postgres:15
     container_name: postgres
     hostname: postgres
     environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
     ports:
       - "5432:5432"
     volumes:
@@ -25,31 +46,190 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - airflow_network
+      - pipeline_network
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # 2. Apache Kafka 7.9.0  —  Broker en modo KRaft (sin Zookeeper)
+  # ──────────────────────────────────────────────────────────────────────────
   kafka:
     image: confluentinc/cp-kafka:7.9.0
     container_name: kafka
     hostname: kafka
     environment:
-      - KAFKA_NODE_ID=1
-      - KAFKA_PROCESS_ROLES=broker,controller
-      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:29093
-      - KAFKA_LISTENERS=PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      - CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
-      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
-      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
-      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      # Listeners internos (Docker) y externos (host)
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     ports:
       - "9092:9092"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
     networks:
-      - airflow_network
+      - pipeline_network
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # 3. HDFS Namenode  —  Maestro del sistema de ficheros distribuido
+  #    WebHDFS expuesto en :9870   |   HDFS RPC en :9000
+  # ──────────────────────────────────────────────────────────────────────────
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    hostname: namenode
+    environment:
+      CLUSTER_NAME: home-sensor-cluster
+      # Configuración core-site.xml
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      CORE_CONF_hadoop_http_staticuser_user: root
+      CORE_CONF_hadoop_proxyuser_root_hosts: "*"
+      CORE_CONF_hadoop_proxyuser_root_groups: "*"
+      # Configuración hdfs-site.xml
+      HDFS_CONF_dfs_webhdfs_enabled: "true"
+      HDFS_CONF_dfs_permissions_enabled: "false"
+      HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: "false"
+      HDFS_CONF_dfs_replication: 2
+      HDFS_CONF_dfs_namenode_name_dir: file:///hadoop/dfs/name
+    ports:
+      - "9870:9870"   # NameNode Web UI + WebHDFS REST API
+      - "9000:9000"   # HDFS filesystem (puerto interno)
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9870/webhdfs/v1/?op=LISTSTATUS"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    networks:
+      - pipeline_network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 4a. HDFS Datanode 1  —  Primer nodo de almacenamiento
+  # ──────────────────────────────────────────────────────────────────────────
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    hostname: datanode1
+    environment:
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      CORE_CONF_hadoop_http_staticuser_user: root
+      HDFS_CONF_dfs_webhdfs_enabled: "true"
+      HDFS_CONF_dfs_permissions_enabled: "false"
+      HDFS_CONF_dfs_replication: 2
+      HDFS_CONF_dfs_datanode_data_dir: file:///hadoop/dfs/data
+    ports:
+      - "9864:9864"   # DataNode 1 Web UI
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    depends_on:
+      namenode:
+        condition: service_healthy
+    networks:
+      - pipeline_network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 4b. HDFS Datanode 2  —  Segundo nodo de almacenamiento (replicación × 2)
+  # ──────────────────────────────────────────────────────────────────────────
+  datanode2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode2
+    hostname: datanode2
+    environment:
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      CORE_CONF_hadoop_http_staticuser_user: root
+      HDFS_CONF_dfs_webhdfs_enabled: "true"
+      HDFS_CONF_dfs_permissions_enabled: "false"
+      HDFS_CONF_dfs_replication: 2
+      HDFS_CONF_dfs_datanode_data_dir: file:///hadoop/dfs/data
+    ports:
+      - "9865:9864"   # DataNode 2 Web UI (puerto host diferente para evitar conflicto)
+    volumes:
+      - hadoop_datanode2:/hadoop/dfs/data
+    depends_on:
+      namenode:
+        condition: service_healthy
+    networks:
+      - pipeline_network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 5. Kafka Connect  —  Puente Kafka → HDFS
+  #    Instala en el primer arranque el plugin HDFS3 Sink de Confluent Hub.
+  #    REST API en :8083
+  #
+  #    NOTA: El primer inicio tarda ~2-3 min (descarga del plugin).
+  #          Los sucesivos arranques son inmediatos (imagen en caché).
+  # ──────────────────────────────────────────────────────────────────────────
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.9.0
+    container_name: kafka-connect
+    hostname: kafka-connect
+    depends_on:
+      kafka:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+    environment:
+      # Bootstrap
+      CONNECT_BOOTSTRAP_SERVERS: kafka:29092
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_REST_PORT: 8083
+      # Grupo y topics de coordinación interna
+      CONNECT_GROUP_ID: connect-cluster-home-sensors
+      CONNECT_CONFIG_STORAGE_TOPIC: _connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: _connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: _connect-status
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      # Converters  — JSON plano sin Schema Registry (más sencillo para demo)
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      # Plugin path: incluye la carpeta donde confluent-hub instala el conector
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components
+      CONNECT_LOG4J_ROOT_LOGLEVEL: WARN
+    ports:
+      - "8083:8083"
+    # Instala el conector HDFS3 Sink en el primer arranque y luego lanza Connect
+    command:
+      - bash
+      - -c
+      - |
+        echo ">>> Instalando plugin HDFS3 Sink desde Confluent Hub..."
+        confluent-hub install --no-prompt confluentinc/kafka-connect-hdfs3:latest
+        echo ">>> Plugin instalado. Iniciando Kafka Connect..."
+        /etc/confluent/docker/run
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8083/connectors > /dev/null"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 180s    # Margen amplio para la descarga del plugin
+    networks:
+      - pipeline_network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 6. Apache Airflow 2.9.3  —  Orquestador (LocalExecutor)
+  #    Webserver en :8081   |   Requiere que todos los servicios estén sanos
+  # ──────────────────────────────────────────────────────────────────────────
   airflow:
     build:
       context: .
@@ -61,22 +241,26 @@ services:
       postgres:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
+      kafka-connect:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
     environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CORE__FERNET_KEY='d6nNXtWJQL85dCkOTB8FRQ5TPAi6XW7Xbw3l84QJ8q8='
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: d6nNXtWJQL85dCkOTB8FRQ5TPAi6XW7Xbw3l84QJ8q8=
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 120
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - airflow-logs:/opt/airflow/logs
+      - ./dags:/opt/airflow/dags                       # DAGs del pipeline
+      - ./data:/opt/airflow/data                       # Dataset CSV de origen
+      - ./logs_analytics:/opt/airflow/logs_analytics   # Reportes analíticos
+      - airflow-logs:/opt/airflow/logs                 # Logs internos de Airflow
     entrypoint: /bin/bash
     command: /init-airflow.sh
     ports:
       - "8081:8080"
     networks:
-      - airflow_network
-        
-
-
-
+      - pipeline_network
